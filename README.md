@@ -204,7 +204,7 @@ Then configure Claude Desktop:
         "run",
         "--rm",
         "-i",
-        "mcp/researcher-quantitative"
+        "mcp/quantitativeresearch"
       ]
     }
   }
@@ -234,7 +234,7 @@ node quantitativeresearch_index.js
 ### Docker:
 
 ```bash
-docker build -t mcp/researcher-quantitative -f quantitativeresearch/Dockerfile .
+docker build -t mcp/quantitativeresearch -f quantitativeresearch/Dockerfile .
 ```
 
 ## License
