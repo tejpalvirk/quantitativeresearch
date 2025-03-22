@@ -166,7 +166,7 @@ Add this to your `claude_desktop_config.json`:
       "command": "npx",
       "args": [
         "-y",
-        "github:tejpalvirk/contextmanager/quantitativeresearch"
+        "github:tejpalvirk/quantitativeresearch"
       ]
     }
   }
@@ -178,7 +178,7 @@ Add this to your `claude_desktop_config.json`:
 First, install the package globally:
 
 ```bash
-npm install -g github:tejpalvirk/contextmanager/quantitativeresearch
+npm install -g github:tejpalvirk/quantitativeresearch
 ```
 
 Then configure Claude Desktop:
@@ -187,7 +187,7 @@ Then configure Claude Desktop:
 {
   "mcpServers": {
     "quantitativeresearch": {
-      "command": "mcp-server-researcher-quantitative"
+      "command": "contextmanager-quantitativeresearch"
     }
   }
 }
