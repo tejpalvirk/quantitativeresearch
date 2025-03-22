@@ -1,5 +1,3 @@
-Load Context Tool for Quantitative Research
-
 A powerful tool for retrieving detailed contextual information about quantitative research entities, providing rich statistical insights tailored to each entity type.
 
 When to use this tool:

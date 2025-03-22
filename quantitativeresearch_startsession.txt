@@ -1,5 +1,3 @@
-Start Session Tool for Quantitative Research
-
 A comprehensive tool for initializing a new quantitative research session, providing structured information about ongoing research projects, datasets, statistical models, and recent research activities.
 
 When to use this tool:

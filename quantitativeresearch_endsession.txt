@@ -1,5 +1,3 @@
-End Session Tool for Quantitative Research
-
 A multi-stage tool for documenting quantitative research sessions, recording statistical analyses, tracking dataset updates, and creating a structured record of research evolution.
 
 When to use this tool:

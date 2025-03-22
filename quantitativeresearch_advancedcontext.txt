@@ -1,5 +1,3 @@
-Advanced Context Tool for Quantitative Research
-
 A sophisticated query tool for exploring, analyzing, and retrieving complex information from the quantitative research knowledge graph.
 
 When to use this tool:
