@@ -1,0 +1,104 @@
+Build Context Tool for Quantitative Research
+
+A versatile tool for constructing and enhancing the quantitative research knowledge graph by adding new research elements, relationships, and observations.
+
+When to use this tool:
+- Creating new research entities (projects, datasets, variables, hypotheses, statistical tests, etc.)
+- Establishing relationships between research elements (e.g., connecting variables to datasets, statistical tests to hypotheses)
+- Adding observations, properties, or metadata to existing research entities
+- Building the research corpus incrementally as data collection and analysis progress
+- Organizing and structuring quantitative data within your research framework
+- Documenting statistical analyses, models, and their results
+- Tracking research questions and linking them to findings
+- Creating visualizations and connecting them to data and analyses
+
+Key features:
+- Creates three distinct types of knowledge graph elements: entities, relations, and observations
+- Supports 13 specialized quantitative research entity types (projects, datasets, variables, hypotheses, statistical tests, results, analysis scripts, visualizations, models, literature, research questions, findings, participants)
+- Validates entity and relation types against predefined standards for the quantitative research domain
+- Handles batch creation of multiple entities or relations in a single operation
+- Returns confirmation with details of created elements
+- Ensures proper data typing and structure for the quantitative research knowledge graph
+- Enables comprehensive documentation of statistical analysis processes
+
+Parameters explained:
+1. type: The type of creation operation to perform
+  - Accepts: "entities", "relations", or "observations"
+  - Determines how the data parameter is interpreted
+2. data: The content to add to the knowledge graph (structure varies by type):
+  - For "entities": An array of objects, each containing:
+    * name: Unique identifier for the entity
+    * entityType: One of the valid entity types (project, dataset, variable, hypothesis, statisticalTest, result, analysisScript, visualization, model, literature, researchQuestion, finding, participant)
+    * observations: Array of strings containing notes or properties about the entity
+  - For "relations": An array of objects, each containing:
+    * from: Name of the source entity
+    * to: Name of the target entity
+    * relationType: The type of relationship between entities (e.g., correlates_with, predicts, tests, analyzes, produces, etc.)
+  - For "observations": Either a single object or an array of objects, each containing:
+    * entityName: Name of the entity to add observations to
+    * contents: Array of strings with new observations to add
+
+Valid entity types:
+- project: Overall research study
+- dataset: Collection of data used for analysis
+- variable: Specific measurable attribute in a dataset
+- hypothesis: Formal testable statement
+- statisticalTest: Analysis method applied to data
+- result: Outcome of statistical analysis
+- analysisScript: Code used to perform analysis
+- visualization: Visual representation of data
+- model: Statistical/mathematical model
+- literature: Academic sources
+- researchQuestion: Formal questions guiding the study
+- finding: Results or conclusions
+- participant: Research subjects
+
+Valid relation types:
+- correlates_with: Statistical correlation between variables
+- predicts: Predictive relationship from independent to dependent variable
+- tests: Statistical test examines hypothesis
+- analyzes: Analysis performed on dataset
+- produces: Analysis produces result
+- visualizes: Visualization displays data or result
+- contains: Hierarchical relationship
+- part_of: Entity is part of another entity
+- depends_on: Dependency relationship
+- supports: Evidence supporting a hypothesis or finding
+- contradicts: Evidence contradicting a hypothesis or finding
+- derived_from: Entity is derived from another entity
+- controls_for: Variable/method controls for confounds
+- moderates: Variable moderates a relationship
+- mediates: Variable mediates a relationship
+- implements: Script implements statistical test/model
+- compares: Statistical comparison between groups/variables
+- includes: Model includes variables
+- validates: Validates a model or result
+- cites: References literature
+
+Return information:
+- JSON response indicating success or failure
+- For successful operations:
+  * Success flag set to true
+  * Details of created elements in the "created" field (for entities/relations) or "added" field (for observations)
+- For failed operations:
+  * Success flag set to false
+  * Error message describing the issue
+
+Error handling:
+- Validates entity types against the predefined list for quantitative research
+- Validates relation types against acceptable standards
+- Returns descriptive error messages for invalid inputs
+- Gracefully handles type mismatches and formatting errors
+
+You should:
+- Use consistent naming conventions for entities to facilitate relationships and retrieval
+- Begin by creating projects and datasets before more specific research elements
+- Add detailed observations to entities to enhance context and retrievability
+- Create relationships to build a comprehensive network of interconnected research data
+- Document statistical methodology thoroughly by connecting tests, variables, and hypotheses
+- Add statistical results with appropriate metadata (p-values, effect sizes, confidence intervals)
+- Create visualizations and link them to the data they represent
+- Use relations to document the flow of analysis from data to findings
+- Connect literature to support hypotheses and contextualize findings
+- Structure models with clear relationships to the variables they include
+- Document analysis scripts with information about their purpose and implementation 

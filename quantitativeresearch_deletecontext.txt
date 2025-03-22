@@ -1,0 +1,75 @@
+Delete Context Tool for Quantitative Research
+
+A precise tool for removing elements from the quantitative research knowledge graph, enabling researchers to maintain data accuracy and refine their analytical framework.
+
+When to use this tool:
+- Removing incorrect or duplicate research entities
+- Deleting erroneous relationships between research elements
+- Clearing outdated observations from research entities
+- Restructuring your research framework as analysis evolves
+- Removing invalid statistical tests or models
+- Correcting relationships between variables, datasets, or results
+- Cleaning up the knowledge graph during research refinement phases
+- Eliminating deprecated hypotheses or findings that are no longer supported
+- Removing preliminary analyses that have been superseded by more rigorous methods
+- Reorganizing your analytical structure by removing and recreating elements
+
+Key features:
+- Provides targeted deletion capabilities for three distinct types of knowledge graph elements: entities, relations, and observations
+- Maintains knowledge graph integrity during deletion operations
+- Supports batch deletion of multiple items in a single operation
+- Returns clear confirmation of deletion results
+- Preserves the overall structure of the research knowledge graph while removing specific elements
+- Performs validation to ensure deletion requests are properly formatted
+
+Parameters explained:
+1. type: The type of deletion operation to perform
+  - Accepts: "entities", "relations", or "observations"
+  - Determines how the data parameter is interpreted
+2. data: The elements to remove from the knowledge graph (structure varies by type):
+  - For "entities": Array of entity names to delete
+    * Example: ["Dataset_2021", "Hypothesis_A", "Model_Linear"]
+  - For "relations": Array of relation objects, each containing:
+    * from: Name of the source entity
+    * to: Name of the target entity
+    * relationType: Type of relationship to remove
+    * Example: [{ "from": "Variable_Age", "to": "Variable_Income", "relationType": "correlates_with" }]
+  - For "observations": Array of objects, each containing:
+    * entityName: Name of the entity to remove observations from
+    * observations: Array of specific observations to remove
+    * Example: [{ "entityName": "Dataset_Main", "observations": ["size:1000", "collection_date:2022-05-15"] }]
+
+Deletion behavior by type:
+- Entities: Removes the specified entities and all their associated relations from the knowledge graph
+- Relations: Removes only the specified relationships, leaving the connected entities intact
+- Observations: Removes specific observations from entities while preserving the entities themselves
+
+Safety considerations:
+- Entity deletion is permanent and will also remove all relationships involving those entities
+- Consider exporting or backing up your research knowledge graph before performing large-scale deletions
+- For sensitive operations, consider removing specific observations rather than entire entities
+- When removing statistical tests or results, consider the impact on your overall analysis framework
+
+Return information:
+- JSON response indicating success or failure
+- For successful operations:
+  - Success flag set to true
+  - Confirmation message with count of deleted items
+    * For entities: "Deleted X entities"
+    * For relations: "Deleted X relations"
+    * For observations: "Deleted observations from X entities"
+- For failed operations:
+  - Success flag set to false
+  - Error message describing the issue
+
+You should:
+- Be specific in your deletion requests to avoid unintended data loss
+- Use relations deletion when you want to disconnect entities without removing them
+- For observations, provide the exact observations to ensure only the intended content is removed
+- When restructuring your analysis, consider how deletions will affect related elements
+- Use deletecontext in conjunction with buildcontext to refine and evolve your research framework
+- Regularly review your knowledge graph for elements that may need to be removed or updated
+- Consider the cascading effects of entity deletion on your overall research structure
+- Delete outdated statistical results when new analyses are performed
+- Remove incorrect relationships between variables when better understanding is gained
+- Update entities by deleting specific observations and adding new ones 

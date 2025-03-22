@@ -1,0 +1,81 @@
+Start Session Tool for Quantitative Research
+
+A comprehensive tool for initializing a new quantitative research session, providing structured information about ongoing research projects, datasets, statistical models, and recent research activities.
+
+When to use this tool:
+- Beginning a new quantitative analysis session
+- Getting oriented to your current research state across multiple projects
+- Planning which research elements to focus on in the current session
+- Reviewing recent research activities and progress
+- Identifying active research projects and their status
+- Exploring available datasets for analysis
+- Reviewing current research questions
+- Examining statistical models and their performance
+- Viewing recent visualizations of your data
+- Establishing research context before diving into specific analysis tasks
+- Re-engaging with your research after time away
+
+Key features:
+- Generates a unique session identifier for tracking research activities
+- Retrieves and displays recent research sessions with summaries
+- Lists active research projects with status information
+- Provides a sample of available datasets with key information
+- Presents current research questions guiding your studies
+- Highlights recent statistical models with performance metrics
+- Displays recent visualizations with brief descriptions
+- Formats information in an easily scannable format for quick orientation
+- Integrates with the loadcontext tool for deeper exploration
+- Maintains continuity between research sessions
+- Tracks research session history for progress review
+
+Parameters explained:
+No parameters required - the tool automatically retrieves all relevant context.
+
+Return information:
+- Recent research sessions (up to 3) with:
+  - Date
+  - Project name
+  - Brief summary
+  
+- Active research projects with:
+  - Project name
+  - Current status
+  
+- Available datasets (up to 5) with:
+  - Dataset name
+  - Type of data
+  - Associated project
+  
+- Research questions (up to 5) with:
+  - Question text
+  - Associated project
+  
+- Recent statistical models with:
+  - Model name
+  - Model type
+  - Performance metrics
+  
+- Recent visualizations with:
+  - Visualization name
+  - Type (chart, plot, etc.)
+  - Associated dataset
+
+Session Workflow:
+1. Start a research session with startsession
+2. Review the provided context to decide what to focus on
+3. Use loadcontext to retrieve detailed information about specific research elements
+4. Conduct your analysis, adding new elements with buildcontext as needed
+5. End the session with endsession to record your research progress
+
+You should:
+- Begin each focused research period with startsession to establish context
+- Review recent sessions to maintain continuity in your research
+- Identify active projects that require attention
+- Note available datasets for potential analysis
+- Consider current research questions that need investigation
+- Review existing statistical models before creating new ones
+- Examine recent visualizations to understand data representation
+- Use the session ID when using other tools to maintain session tracking
+- After completing a session, record your progress using endsession
+- Establish a regular cadence of research sessions to maintain momentum
+- Use the structured overview to make deliberate choices about where to focus your analytical effort 

@@ -1,0 +1,98 @@
+Advanced Context Tool for Quantitative Research
+
+A sophisticated query tool for exploring, analyzing, and retrieving complex information from the quantitative research knowledge graph.
+
+When to use this tool:
+- Retrieving a comprehensive view of your entire research knowledge structure
+- Searching for specific research entities across your quantitative data projects
+- Getting detailed information about particular research projects, datasets, or statistical elements
+- Exploring relationships between variables and their statistical properties
+- Analyzing hypothesis test results and their implications
+- Retrieving statistical model performance metrics
+- Accessing visualization galleries for specific projects or datasets
+- Examining variable distributions and their statistical properties
+- Finding connections between different aspects of your research
+- Creating statistical reports or summaries from your data
+- Exploring the relationships between research questions and findings
+
+Key features:
+- Offers 13 specialized operations for querying different aspects of quantitative research data
+- Retrieves complete or filtered views of the research knowledge graph
+- Provides flexible search capabilities across all research entities
+- Supports detailed exploration of specific entities by name
+- Generates specialized views for projects, datasets, hypotheses, and variables
+- Retrieves statistical results, visualizations, and model performance metrics
+- Provides detailed variable distribution analysis
+- Identifies related entities to explore connections within your research
+- Returns consistently structured JSON responses for easy processing
+- Facilitates depth and breadth exploration of quantitative data
+
+Parameters explained:
+1. type: The type of query operation to perform
+  - Accepts one of 13 specialized operations: "graph", "search", "nodes", "project", "dataset", "hypothesis", "variables", "statistics", "visualizations", "model", "question", "distribution", or "related"
+  - Determines how the params parameter is interpreted
+2. params: Operation-specific parameters (structure varies by type):
+  - For "graph": No parameters needed (retrieves the full research knowledge graph)
+  - For "search": Object containing:
+    * query: Search string to find entities (supports entity type filters)
+  - For "nodes": Object containing:
+    * names: Array of entity names to retrieve
+  - For "project": Object containing:
+    * projectName: Name of the project to retrieve details for
+  - For "dataset": Object containing:
+    * datasetName: Name of the dataset to retrieve analysis for
+  - For "hypothesis": Object containing:
+    * projectName: Project name to filter hypotheses by
+    * hypothesisName: (Optional) Specific hypothesis to retrieve tests for
+  - For "variables": Object containing:
+    * variableName: Name of the variable to retrieve relationship information for
+  - For "statistics": Object containing:
+    * projectName: Project name to retrieve statistical results for
+    * testType: (Optional) Type of statistical test to filter by
+  - For "visualizations": Object containing:
+    * projectName: Project name to retrieve visualizations for
+    * datasetName: (Optional) Dataset name to filter visualizations by
+  - For "model": Object containing:
+    * modelName: Name of the model to retrieve performance metrics for
+  - For "question": Object containing:
+    * questionName: Name of the research question to retrieve results for
+  - For "distribution": Object containing:
+    * variableName: Name of the variable to analyze distribution of
+    * datasetName: (Optional) Dataset name to contextualize the variable
+  - For "related": Object containing:
+    * entityName: Name of the entity to find related entities for
+
+Operation details:
+- graph: Returns the complete research knowledge graph with all entities and relationships
+- search: Performs text-based search across entity names and observations
+- nodes: Retrieves detailed information about specific entities by name
+- project: Returns comprehensive project information including datasets, hypotheses, tests, and findings
+- dataset: Provides detailed dataset analysis with variables, descriptive statistics, and correlations
+- hypothesis: Retrieves hypothesis tests and their results for a project or specific hypothesis
+- variables: Examines relationships between a variable and other variables (correlations, dependencies)
+- statistics: Collects statistical test results for a project, optionally filtered by test type
+- visualizations: Returns visualization metadata and descriptions for a project or dataset
+- model: Provides detailed model performance metrics, parameters, and validation results
+- question: Retrieves research question details, related hypotheses, and supporting findings
+- distribution: Analyzes the statistical distribution of a variable with descriptive stats and normality tests
+- related: Identifies all entities directly connected to a specific entity
+
+Return information:
+- success: Boolean indicating whether the operation succeeded
+- Additional fields depend on the operation type:
+  * graph: Complete knowledge graph
+  * results: For search operations
+  * nodes: For specific entity retrieval
+  * project/dataset/hypothesis/etc.: For specialized views
+
+You should:
+- Start with broad queries ("graph", "search") to explore your research corpus
+- Use specific entity queries ("nodes", "project", "dataset") for detailed information
+- Examine variable relationships and distributions to understand your data
+- Review hypothesis tests and statistical results to evaluate evidence
+- Explore model performance metrics to assess predictive accuracy
+- Use visualization galleries to communicate research findings
+- Examine research questions and their supporting evidence
+- Combine multiple operations to build a comprehensive understanding of your research
+- Use the related operation to discover connections between entities
+- Apply search filters to find specific types of research elements 

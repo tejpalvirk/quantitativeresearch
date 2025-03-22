@@ -1,0 +1,62 @@
+## Usage examples
+
+### Stage 1: Summary Stage
+```json
+{
+  "sessionId": "quant_1234567890_abc123",
+  "stage": "summary",
+  "stageNumber": 1,
+  "totalStages": 8,
+  "analysis": "Analyzed progress on the multiple regression analysis",
+  "stageData": {
+    "summary": "Completed data preparation and initial statistical tests",
+    "duration": "4 hours",
+    "project": "Customer Satisfaction Study"
+  },
+  "nextStageNeeded": true,
+  "isRevision": false
+}
+```
+
+### Stage 3: New Analyses Stage
+```json
+{
+  "sessionId": "quant_1234567890_abc123",
+  "stage": "newAnalyses",
+  "stageNumber": 3,
+  "totalStages": 8,
+  "analysis": "Conducted statistical tests on prepared data",
+  "stageData": {
+    "analyses": [
+      { 
+        "name": "Age_Income_Regression", 
+        "type": "multiple_regression", 
+        "result": "Significant relationship found", 
+        "pValue": "0.003",   
+        "variables": ["age", "income", "satisfaction_score"] 
+      },
+      { 
+        "name": "Gender_Satisfaction_Ttest", 
+        "type": "t_test", 
+        "result": "No significant difference", 
+        "pValue": "0.42", 
+        "variables": ["gender", "satisfaction_score"] 
+      }
+    ]
+  },
+  "nextStageNeeded": true,
+  "isRevision": false
+}
+```
+
+### Final Stage: Assembly
+```json
+{
+  "sessionId": "quant_1234567890_abc123",
+  "stage": "assembly",
+  "stageNumber": 8,
+  "totalStages": 8,
+  "nextStageNeeded": false,
+  "isRevision": false
+}
+```

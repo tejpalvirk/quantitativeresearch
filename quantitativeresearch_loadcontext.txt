@@ -1,0 +1,65 @@
+Load Context Tool for Quantitative Research
+
+A powerful tool for retrieving detailed contextual information about quantitative research entities, providing rich statistical insights tailored to each entity type.
+
+When to use this tool:
+- Retrieving comprehensive information about research projects, datasets, variables, and statistical elements
+- Exploring the statistical relationships between variables
+- Examining hypothesis tests and their results
+- Reviewing model performance metrics and parameters
+- Analyzing dataset properties and descriptive statistics
+- Inspecting visualizations related to specific datasets or projects
+- Understanding statistical test results and their significance
+- Preparing for statistical analysis by establishing data context
+- Examining variable distributions and correlations
+- Getting a holistic view of quantitative research progress
+
+Key features:
+- Provides richly formatted, context-aware information about quantitative research entities
+- Adapts output format based on entity type (project, dataset, variable, model, hypothesis, statistical_test)
+- Presents both direct entity information and related statistical elements
+- Shows statistical metrics, p-values, and significance levels
+- Tracks entity views within the current research session
+- Formats information in a structured, readable markdown format
+- Highlights relationships between variables and statistical tests
+- Presents performance metrics for statistical models
+- Shows dataset characteristics and variable properties
+
+Parameters explained:
+1. entityName: Required - The name of the entity to retrieve context for
+  - Example: "Customer Satisfaction Study", "Survey_Dataset", "Age_Variable"
+2. entityType: Optional - The type of entity being retrieved
+  - Default: "project"
+  - Helps the system format the output appropriately
+  - Common types include: "project", "dataset", "variable", "model", "hypothesis", "statistical_test"
+3. sessionId: Optional - The current session identifier
+  - Typically provided by startsession
+  - Used for tracking entity views within the session
+
+Each entity type returns specialized context information:
+- Project: Shows project status, description, datasets, hypotheses, statistical tests, models, and key visualizations
+- Dataset: Displays project affiliation, size, variable count, descriptive statistics, visualizations, and models trained on it
+- Variable: Shows data type, role, scale, descriptive statistics, normality tests, and correlations with other variables
+- Model: Displays type, training dataset, creation date, performance metrics, and model parameters
+- Hypothesis: Shows status, p-value, creation date, associated tests, and project affiliation
+- Statistical Test: Shows test type, result, p-value, date, variables analyzed, and hypotheses tested
+- Other Entity Types: Shows basic entity information and observations
+
+Return information:
+- Formatted markdown text with hierarchical structure
+- Sections adapted to the specific entity type
+- Related entities shown with their statistical properties
+- Error messages if the entity doesn't exist or can't be retrieved
+
+You should:
+- Specify the exact entity name for accurate retrieval
+- Provide the entity type when possible for optimally formatted results
+- Start with project entities to get a high-level overview of research
+- Examine dataset context to understand variable relationships
+- Review variable context to understand distributions and correlations
+- Use hypothesis context to assess research question outcomes
+- Explore model context to evaluate predictive performance
+- Examine statistical test context to understand analysis results
+- After retrieving context, follow up on specific entities of interest
+- Use in conjunction with startsession to maintain session tracking
+- Remember that this tool only retrieves existing information; use buildcontext to add new entities 

@@ -1,0 +1,111 @@
+End Session Tool for Quantitative Research
+
+A multi-stage tool for documenting quantitative research sessions, recording statistical analyses, tracking dataset updates, and creating a structured record of research evolution.
+
+When to use this tool:
+- Concluding a quantitative research analysis session
+- Documenting updates to datasets and variables
+- Recording new statistical analyses and test results
+- Tracking creation of data visualizations
+- Documenting hypothesis test results and conclusions
+- Updating statistical model performance information
+- Creating a structured record of research activities
+- Establishing a formal conclusion to a focused research period
+- Building a historical record of project development
+- Documenting observations and insights from statistical analysis
+
+Key features:
+- Provides a structured, multi-stage workflow for research session documentation
+- Records dataset updates in the knowledge graph
+- Captures new statistical analyses and their results
+- Tracks creation of data visualizations and their purposes
+- Documents hypothesis test outcomes with statistical significance
+- Updates statistical model performance metrics
+- Updates project status information
+- Maintains session continuity with unique session IDs
+- Supports revision of previous stages when needed
+- Offers a comprehensive assembly stage that consolidates all session information
+
+The endsession tool uses a sequential, multi-stage approach with 8 typical stages:
+1. Summary Stage: Records basic session information
+2. Dataset Updates Stage: Documents changes to datasets
+3. New Analyses Stage: Records new statistical tests performed
+4. New Visualizations Stage: Documents visualizations created
+5. Hypothesis Results Stage: Records outcomes of hypothesis tests
+6. Model Updates Stage: Documents changes to statistical models
+7. Project Status Stage: Updates the overall project status
+8. Assembly Stage: Consolidates all information and finalizes the session record
+
+Parameters explained:
+1. sessionId: Required - Unique identifier for the research session
+  - Obtained from the startsession tool
+  - Example: "quant_1234567890_abc123"
+2. stage: Required - Current stage of the endsession workflow
+  - Accepts: "summary", "datasetUpdates", "newAnalyses", "newVisualizations", "hypothesisResults", "modelUpdates", "projectStatus", or "assembly"
+  - Each stage has specific data requirements and processing logic
+3. stageNumber: Required - The sequence number of the current stage
+  - Starts at 1 and typically progresses through the stages
+  - Used to track progress through the session documentation workflow
+4. totalStages: Required - Total number of stages planned for this workflow
+  - Typically 8 for the complete workflow
+  - Provides context for the progress within the overall process
+5. analysis: Optional - Text analysis or observations for the current stage
+  - Descriptive text explaining the work done in this stage
+  - Example: "Analyzed multiple regression results and identified significant predictors"
+6. stageData: Optional - Stage-specific structured data
+  - Structure varies by stage type:
+    * summary: { summary: "Session summary text", duration: "3 hours", project: "ProjectName" }
+    * datasetUpdates: { datasets: [{ name: "Dataset1", size: "500 rows", variables: "10", status: "cleaned", description: "Dataset description" }] }
+    * newAnalyses: { analyses: [{ name: "Analysis1", type: "regression", result: "p<0.05", pValue: "0.03", variables: ["var1", "var2"] }] }
+    * newVisualizations: { visualizations: [{ name: "Viz1", type: "scatter", description: "Correlation visualization", datasetName: "Dataset1" }] }
+    * hypothesisResults: { hypotheses: [{ name: "H1", status: "confirmed", evidence: "Statistical significance in regression model", pValue: "0.02" }] }
+    * modelUpdates: { models: [{ name: "Model1", type: "regression", performance: "R²=0.85", variables: ["var1", "var2"] }] }
+    * projectStatus: { projectStatus: "in_progress", projectObservation: "Data analysis phase complete" }
+    * assembly: No stageData needed - automatically assembled from previous stages
+7. nextStageNeeded: Required - Whether additional stages are needed after this one
+  - Boolean value (true/false)
+  - Set to false on the final stage to complete the session
+8. isRevision: Optional - Whether this is revising a previous stage
+  - Boolean value (true/false)
+  - Default: false
+9. revisesStage: Optional - If revising, which stage number is being revised
+  - Required when isRevision is true
+  - Indicates which previous stage is being updated
+
+When the endsession workflow completes (assembly stage with nextStageNeeded: false), the tool performs these updates:
+1. Dataset Entities: Updates existing datasets or creates new dataset entities with the provided information
+2. Statistical Analyses: Creates entities for statistical tests and links them to projects and variables
+3. Visualizations: Creates entities for data visualizations and links them to datasets and projects
+4. Hypothesis Updates: Updates existing hypotheses or creates new hypothesis entities with test results
+5. Model Updates: Updates existing model entities or creates new models with performance metrics
+6. Project Status: Updates the project status, adds an updated timestamp, and records observations
+
+Return information:
+- JSON response with the following structure when stages are in progress:
+  * success: Boolean indicating whether the operation succeeded
+  * stageCompleted: The stage that was just completed
+  * nextStageNeeded: Whether more stages are required
+  * stageResult: The processed result of the current stage
+- Formatted markdown text summary when the session is completed, including:
+  * Session date and project name
+  * Summary of the session
+  * Dataset updates
+  * New statistical analyses
+  * New visualizations
+  * Hypothesis test results
+  * Model updates
+  * Project status update
+
+You should:
+- Complete all stages in order for comprehensive session documentation
+- Provide specific details in each stage for accurate research documentation
+- Specify dataset updates with clear size, variable count, and status information
+- Include p-values and variable names for statistical analyses
+- Connect visualizations to specific datasets when possible
+- Document hypothesis test results with evidence and significance levels
+- Include performance metrics when updating statistical models
+- Include relevant observations for project status updates
+- If making a revision, specify which stage is being revised
+- Only mark nextStageNeeded as false on the final assembly stage
+- Review the final summary message to confirm all session details were recorded properly
+- Use the unique session ID consistently across all stages 
