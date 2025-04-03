@@ -33,6 +33,8 @@ The Quantitative Researcher MCP Server recognizes the following entity types:
 - **researchQuestion**: Formal questions guiding the study
 - **finding**: Results or conclusions
 - **participant**: Research subjects
+- **status**: Entity status values (active, completed, pending, abandoned)
+- **priority**: Priority level values (high, low)
 
 ## Relationships
 
@@ -58,16 +60,19 @@ Entities can be connected through the following relationship types:
 - **includes**: Model includes variables
 - **validates**: Validates a model or result
 - **cites**: References literature
+- **has_status**: Links entities to their current status (active, completed, pending, abandoned)
+- **has_priority**: Links entities to their priority level (high, low)
+- **precedes**: Indicates that one process or activity comes before another in a sequence
 
 ## Available Tools
 
 The Quantitative Researcher MCP Server provides these tools for interacting with research knowledge:
 
 ### startsession
-Starts a new quantitative research session, generating a unique session ID and displaying current research projects, datasets, models, visualizations, and previous sessions.
+Starts a new quantitative research session, generating a unique session ID and displaying current research projects, datasets, models, visualizations, and previous sessions. Shows status information via has_status relations, priority levels via has_priority relations, and identifies activities ready to be worked on next based on sequential process relationships.
 
 ### loadcontext
-Loads detailed context for a specific entity (project, dataset, variable, etc.), displaying relevant information based on entity type.
+Loads detailed context for a specific entity (project, dataset, variable, etc.), displaying relevant information based on entity type. Includes status information, priority levels, and sequential process relationships.
 
 ### endsession
 Records the results of a research session through a structured, multi-stage process:
@@ -77,19 +82,20 @@ Records the results of a research session through a structured, multi-stage proc
 4. **newVisualizations**: Tracks new data visualizations created
 5. **hypothesisResults**: Documents results of hypothesis testing
 6. **modelUpdates**: Records updates to statistical models
-7. **projectStatus**: Updates overall project status and observations
-8. **assembly**: Final assembly of all session data
+7. **statusUpdates**: Records changes to entity status values
+8. **projectStatus**: Updates overall project status, priority assignments, and sequential relationships
+9. **assembly**: Final assembly of all session data
 
 ### buildcontext
 Creates new entities, relations, or observations in the knowledge graph:
-- **entities**: Add new research entities (projects, datasets, variables, etc.)
-- **relations**: Create relationships between entities
+- **entities**: Add new research entities (projects, datasets, variables, status, priority, etc.)
+- **relations**: Create relationships between entities (including has_status, has_priority, precedes)
 - **observations**: Add observations to existing entities
 
 ### deletecontext
 Removes entities, relations, or observations from the knowledge graph:
 - **entities**: Remove research entities
-- **relations**: Remove relationships between entities
+- **relations**: Remove relationships between entities (including status, priority, and sequential relations)
 - **observations**: Remove specific observations from entities
 
 ### advancedcontext
@@ -98,6 +104,9 @@ Retrieves information from the knowledge graph:
 - **search**: Search for nodes based on query criteria
 - **nodes**: Get specific nodes by name
 - **related**: Find related entities
+- **status**: Find entities with a specific status value (active, completed, pending, abandoned)
+- **priority**: Find entities with a specific priority value (high, low)
+- **sequence**: Identify sequential relationships for research processes
 
 ## Domain-Specific Functions
 
@@ -112,6 +121,9 @@ The Quantitative Researcher MCP Server includes specialized domain functions for
 - **getModelPerformance**: Assess performance metrics for statistical models
 - **getResearchQuestionResults**: Organize analyses and results by research questions
 - **getVariableDistribution**: Examine the distribution and properties of individual variables
+- **getStatusOverview**: View all entities with a specific status (active, completed, pending, abandoned)
+- **getPriorityItems**: Identify high-priority research tasks and activities
+- **getResearchSequence**: Visualize the sequence of research processes based on precedes relations
 
 ## Example Prompts
 
@@ -127,16 +139,16 @@ Load the context for the Climate Impact Study project so I can see the current s
 
 ### Recording Session Results
 ```
-I've just finished analyzing data for my Climate Impact Study. I ran three new regression models to test the relationship between temperature and crop yield, created two visualizations of the correlation patterns, and confirmed our hypothesis about rainfall effects. The model performance improved by 15% after controlling for regional variations.
+I've just finished analyzing data for my Climate Impact Study. I ran three new regression models to test the relationship between temperature and crop yield, created two visualizations of the correlation patterns, and confirmed our hypothesis about rainfall effects. I've marked the temperature analysis as complete and assigned high priority to the regional variation analysis. The model performance improved by 15% after controlling for regional variations.
 ```
 
 ### Managing Research Knowledge
 ```
-Create a new variable called "Annual Precipitation" that's part of the "Climate Measures" dataset with observations noting it's normally distributed with a mean of 34.5 inches.
+Create a new variable called "Annual Precipitation" that's part of the "Climate Measures" dataset with observations noting it's normally distributed with a mean of 34.5 inches. Set its status to active and make it precede the "Crop Yield Analysis" process.
 ```
 
 ```
-Add an observation to the "Regression Model 3" that it explains 78% of the variance in crop yield when controlling for soil quality.
+Update the status of the "Data Cleaning" process to "completed" and add an observation that all outliers have been properly handled.
 ```
 
 ## Usage
@@ -150,6 +162,9 @@ This MCP server enables quantitative researchers to:
 - **Support Result Interpretation**: Connect statistical findings to research questions and theoretical frameworks
 - **Ensure Methodological Rigor**: Document methodological decisions and analytical approaches
 - **Prepare Research Reports**: Organize statistical evidence to support research findings
+- **Track Research Progress**: Monitor entity status throughout the research lifecycle
+- **Prioritize Research Tasks**: Identify and focus on high-priority research activities
+- **Sequence Research Processes**: Plan and visualize the logical order of research and analytical steps
 
 ## Configuration
 
@@ -240,3 +255,28 @@ docker build -t mcp/quantitativeresearch -f quantitativeresearch/Dockerfile .
 ## License
 
 This MCP server is licensed under the MIT License. This means you are free to use, modify, and distribute the software, subject to the terms and conditions of the MIT License. For more details, please see the LICENSE file in the project repository.
+
+## Environment Variables
+
+The Quantitative Research MCP Server supports the following environment variables to customize where data is stored:
+
+- **MEMORY_FILE_PATH**: Path where the knowledge graph data will be stored
+  - Can be absolute or relative (relative paths use current working directory)
+  - Default: `./quantitativeresearch/memory.json`
+
+- **SESSIONS_FILE_PATH**: Path where session data will be stored
+  - Can be absolute or relative (relative paths use current working directory)
+  - Default: `./quantitativeresearch/sessions.json`
+
+Example usage:
+
+```bash
+# Store data in the current directory
+MEMORY_FILE_PATH="./quantitative-memory.json" SESSIONS_FILE_PATH="./quantitative-sessions.json" npx github:tejpalvirk/contextmanager-quantitativeresearch
+
+# Store data in a specific location (absolute path)
+MEMORY_FILE_PATH="/path/to/data/quantitative-memory.json" npx github:tejpalvirk/contextmanager-quantitativeresearch
+
+# Store data in user's home directory
+MEMORY_FILE_PATH="$HOME/contextmanager/quantitative-memory.json" npx github:tejpalvirk/contextmanager-quantitativeresearch
+```

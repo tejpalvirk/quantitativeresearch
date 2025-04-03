@@ -45,5 +45,10 @@ declare class KnowledgeGraphManager {
     getModelPerformance(modelName: string): Promise<any>;
     getResearchQuestionResults(questionName: string): Promise<any>;
     getVariableDistribution(variableName: string, datasetName?: string): Promise<any>;
+    initializeStatusAndPriority(): Promise<void>;
+    getEntityStatus(entityName: string): Promise<string | null>;
+    getEntityPriority(entityName: string): Promise<string | null>;
+    setEntityStatus(entityName: string, statusValue: string): Promise<void>;
+    setEntityPriority(entityName: string, priorityValue: string): Promise<void>;
 }
 export { KnowledgeGraphManager, loadSessionStates, saveSessionStates };

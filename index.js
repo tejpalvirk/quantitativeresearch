@@ -36,31 +36,28 @@ const VALID_ENTITY_TYPES = [
     'literature', // Academic sources
     'researchQuestion', // Formal questions guiding the study
     'finding', // Results or conclusions
-    'participant' // Research subjects
+    'participant', // Research subjects
+    'status', // Entity status values
+    'priority' // Entity priority values
 ];
 // Quantitative Research specific relation types
 const VALID_RELATION_TYPES = [
-    'correlates_with', // Statistical correlation between variables
-    'predicts', // Predictive relationship from independent to dependent variable
-    'tests', // Statistical test examines hypothesis
-    'analyzes', // Analysis performed on dataset
-    'produces', // Analysis produces result
-    'visualizes', // Visualization displays data or result
-    'contains', // Hierarchical relationship
-    'part_of', // Entity is part of another entity
-    'depends_on', // Dependency relationship
-    'supports', // Evidence supporting a hypothesis or finding
-    'contradicts', // Evidence contradicting a hypothesis or finding
-    'derived_from', // Entity is derived from another entity
-    'controls_for', // Variable/method controls for confounds
-    'moderates', // Variable moderates a relationship
-    'mediates', // Variable mediates a relationship
-    'implements', // Script implements statistical test/model
-    'compares', // Statistical comparison between groups/variables
-    'includes', // Model includes variables
-    'validates', // Validates a model or result
-    'cites' // References literature
+    'contains', // Project contains datasets, variables, etc.
+    'derived_from', // Results derived from datasets or tests
+    'analyzes', // Test analyzes variables
+    'produced_by', // Visualization produced by script
+    'supports', // Result supports hypothesis
+    'contradicts', // Result contradicts hypothesis
+    'based_on', // Model based on dataset
+    'cites', // Finding cites literature
+    'addresses', // Test addresses research question
+    'precedes', // Entity precedes another in a sequence
+    'has_status', // Entity has status relation
+    'has_priority' // Entity has priority relation
 ];
+// Valid status and priority values
+const VALID_STATUS_VALUES = ['active', 'completed', 'pending', 'abandoned'];
+const VALID_PRIORITY_VALUES = ['high', 'low'];
 // Status values for different entity types in quantitative research
 const STATUS_VALUES = {
     project: ['planning', 'data_collection', 'analysis', 'writing', 'complete'],
@@ -1201,11 +1198,96 @@ class KnowledgeGraphManager {
             visualizations
         };
     }
+    // Initialize status and priority entities
+    async initializeStatusAndPriority() {
+        const graph = await this.loadGraph();
+        // Create status entities if they don't exist
+        for (const statusValue of VALID_STATUS_VALUES) {
+            const statusName = `status:${statusValue}`;
+            if (!graph.entities.some(e => e.name === statusName && e.entityType === 'status')) {
+                graph.entities.push({
+                    name: statusName,
+                    entityType: 'status',
+                    observations: [`A ${statusValue} status value`]
+                });
+            }
+        }
+        // Create priority entities if they don't exist
+        for (const priorityValue of VALID_PRIORITY_VALUES) {
+            const priorityName = `priority:${priorityValue}`;
+            if (!graph.entities.some(e => e.name === priorityName && e.entityType === 'priority')) {
+                graph.entities.push({
+                    name: priorityName,
+                    entityType: 'priority',
+                    observations: [`A ${priorityValue} priority value`]
+                });
+            }
+        }
+        await this.saveGraph(graph);
+    }
+    // Helper method to get status of an entity
+    async getEntityStatus(entityName) {
+        const graph = await this.loadGraph();
+        // Find status relation for this entity
+        const statusRelation = graph.relations.find(r => r.from === entityName &&
+            r.relationType === 'has_status');
+        if (statusRelation) {
+            // Extract status value from the status entity name (status:value)
+            return statusRelation.to.split(':')[1];
+        }
+        return null;
+    }
+    // Helper method to get priority of an entity
+    async getEntityPriority(entityName) {
+        const graph = await this.loadGraph();
+        // Find priority relation for this entity
+        const priorityRelation = graph.relations.find(r => r.from === entityName &&
+            r.relationType === 'has_priority');
+        if (priorityRelation) {
+            // Extract priority value from the priority entity name (priority:value)
+            return priorityRelation.to.split(':')[1];
+        }
+        return null;
+    }
+    // Helper method to set status of an entity
+    async setEntityStatus(entityName, statusValue) {
+        if (!VALID_STATUS_VALUES.includes(statusValue)) {
+            throw new Error(`Invalid status value: ${statusValue}. Valid values are: ${VALID_STATUS_VALUES.join(', ')}`);
+        }
+        const graph = await this.loadGraph();
+        // Remove any existing status relations for this entity
+        graph.relations = graph.relations.filter(r => !(r.from === entityName && r.relationType === 'has_status'));
+        // Add new status relation
+        graph.relations.push({
+            from: entityName,
+            to: `status:${statusValue}`,
+            relationType: 'has_status'
+        });
+        await this.saveGraph(graph);
+    }
+    // Helper method to set priority of an entity
+    async setEntityPriority(entityName, priorityValue) {
+        if (!VALID_PRIORITY_VALUES.includes(priorityValue)) {
+            throw new Error(`Invalid priority value: ${priorityValue}. Valid values are: ${VALID_PRIORITY_VALUES.join(', ')}`);
+        }
+        const graph = await this.loadGraph();
+        // Remove any existing priority relations for this entity
+        graph.relations = graph.relations.filter(r => !(r.from === entityName && r.relationType === 'has_priority'));
+        // Add new priority relation
+        graph.relations.push({
+            from: entityName,
+            to: `priority:${priorityValue}`,
+            relationType: 'has_priority'
+        });
+        await this.saveGraph(graph);
+    }
 }
 // Main function to set up the MCP server
 async function main() {
     try {
         const knowledgeGraphManager = new KnowledgeGraphManager();
+        // Initialize status and priority entities
+        await knowledgeGraphManager.initializeStatusAndPriority();
         // Create the MCP server with a name and version
         const server = new McpServer({
             name: "Context Manager",
@@ -1231,98 +1313,115 @@ async function main() {
                 // Initialize the session state
                 sessionStates.set(sessionId, []);
                 await saveSessionStates(sessionStates);
-                // Convert sessions map to array, sort by date, and take most recent ones
+                // Convert sessions map to array and retrieve recent sessions
                 const recentSessions = Array.from(sessionStates.entries())
                     .map(([id, stages]) => {
                     // Extract summary data from the first stage (if it exists)
                     const summaryStage = stages.find(s => s.stage === "summary");
                     return {
                         id,
-                        date: summaryStage?.stageData?.date || "Unknown date",
                         project: summaryStage?.stageData?.project || "Unknown project",
                         summary: summaryStage?.stageData?.summary || "No summary available"
                     };
                 })
-                    .sort((a, b) => b.date.localeCompare(a.date))
-                    .slice(0, 3); // Default to 3 recent sessions
-                // Get active research projects
-                const projectsQuery = await knowledgeGraphManager.searchNodes("entityType:project status:active");
-                const projects = projectsQuery.entities;
+                    .slice(0, 3); // Default to showing 3 recent sessions
+                // Query for all research projects
+                const projectsQuery = await knowledgeGraphManager.searchNodes("entityType:project");
+                const projects = [];
+                // Filter for active projects based on has_status relation
+                for (const project of projectsQuery.entities) {
+                    const status = await knowledgeGraphManager.getEntityStatus(project.name);
+                    if (status === "active") {
+                        projects.push(project);
+                    }
+                }
                 // Get a sampling of datasets
                 const datasetsQuery = await knowledgeGraphManager.searchNodes("entityType:dataset");
                 const datasets = datasetsQuery.entities.slice(0, 5); // Limit to 5 for initial display
                 // Get research questions
-                const questionsQuery = await knowledgeGraphManager.searchNodes("entityType:research_question");
+                const questionsQuery = await knowledgeGraphManager.searchNodes("entityType:researchQuestion");
                 const questions = questionsQuery.entities.slice(0, 5); // Top 5 research questions
                 // Get statistical models
                 const modelsQuery = await knowledgeGraphManager.searchNodes("entityType:model");
-                const models = modelsQuery.entities
-                    .sort((a, b) => {
-                    const dateA = a.observations.find(o => o.startsWith("created:"))?.substring(8) || "";
-                    const dateB = b.observations.find(o => o.startsWith("created:"))?.substring(8) || "";
-                    return dateB.localeCompare(dateA); // Sort by date descending
-                })
-                    .slice(0, 3); // Most recent 3 models
+                const models = modelsQuery.entities.slice(0, 3); // Most recent 3 models
                 // Get visualizations
                 const visualizationsQuery = await knowledgeGraphManager.searchNodes("entityType:visualization");
-                const visualizations = visualizationsQuery.entities
-                    .sort((a, b) => {
-                    const dateA = a.observations.find(o => o.startsWith("created:"))?.substring(8) || "";
-                    const dateB = b.observations.find(o => o.startsWith("created:"))?.substring(8) || "";
-                    return dateB.localeCompare(dateA); // Sort by date descending
-                })
-                    .slice(0, 3); // Most recent 3 visualizations
-                // Format the data for display
-                const projectsText = projects.map(p => {
-                    const status = p.observations.find(o => o.startsWith("status:"))?.substring(7) || "Unknown";
-                    const phase = p.observations.find(o => o.startsWith("phase:"))?.substring(6) || "Unknown";
-                    return `- **${p.name}** (${status}, Phase: ${phase})`;
-                }).join("\n");
-                const datasetsText = datasets.map(d => {
-                    const size = d.observations.find(o => o.startsWith("size:"))?.substring(5) || "Unknown";
-                    const lastUpdated = d.observations.find(o => o.startsWith("updated:"))?.substring(8) || "Unknown";
-                    return `- **${d.name}** (Size: ${size}, Updated: ${lastUpdated})`;
-                }).join("\n");
-                const questionsText = questions.map(q => {
-                    const status = q.observations.find(o => o.startsWith("status:"))?.substring(7) || "Open";
-                    return `- **${q.name}** (${status})`;
-                }).join("\n");
-                const modelsText = models.map(m => {
+                const visualizations = visualizationsQuery.entities.slice(0, 3); // Most recent 3 visualizations
+                // Format the data for display with truncated previews
+                const projectsText = await Promise.all(projects.map(async (p) => {
+                    const status = await knowledgeGraphManager.getEntityStatus(p.name) || "Unknown";
+                    const priority = await knowledgeGraphManager.getEntityPriority(p.name);
+                    const priorityText = priority ? `, Priority: ${priority}` : "";
+                    // Show truncated preview of first observation
+                    const preview = p.observations.length > 0
+                        ? `${p.observations[0].substring(0, 60)}${p.observations[0].length > 60 ? '...' : ''}`
+                        : "No description";
+                    return `- **${p.name}** (Status: ${status}${priorityText}): ${preview}`;
+                }));
+                const datasetsText = await Promise.all(datasets.map(async (d) => {
+                    const status = await knowledgeGraphManager.getEntityStatus(d.name) || "Unknown";
+                    // Show truncated preview of first observation
+                    const preview = d.observations.length > 0
+                        ? `${d.observations[0].substring(0, 60)}${d.observations[0].length > 60 ? '...' : ''}`
+                        : "No description";
+                    return `- **${d.name}** (Status: ${status}): ${preview}`;
+                }));
+                const questionsText = await Promise.all(questions.map(async (q) => {
+                    const status = await knowledgeGraphManager.getEntityStatus(q.name) || "Unknown";
+                    // Show truncated preview of first observation
+                    const preview = q.observations.length > 0
+                        ? `${q.observations[0].substring(0, 60)}${q.observations[0].length > 60 ? '...' : ''}`
+                        : "No description";
+                    return `- **${q.name}** (Status: ${status}): ${preview}`;
+                }));
+                const modelsText = await Promise.all(models.map(async (m) => {
+                    const status = await knowledgeGraphManager.getEntityStatus(m.name) || "Unknown";
                     const type = m.observations.find(o => o.startsWith("type:"))?.substring(5) || "Unknown";
-                    const accuracy = m.observations.find(o => o.startsWith("accuracy:"))?.substring(9) || "Unknown";
-                    return `- **${m.name}** (${type}, Accuracy: ${accuracy})`;
-                }).join("\n");
-                const visualizationsText = visualizations.map(v => {
+                    // Show truncated preview of first non-type observation
+                    const nonTypeObs = m.observations.find(o => !o.startsWith("type:"));
+                    const preview = nonTypeObs
+                        ? `${nonTypeObs.substring(0, 60)}${nonTypeObs.length > 60 ? '...' : ''}`
+                        : "No description";
+                    return `- **${m.name}** (${type}, Status: ${status}): ${preview}`;
+                }));
+                const visualizationsText = await Promise.all(visualizations.map(async (v) => {
+                    const status = await knowledgeGraphManager.getEntityStatus(v.name) || "Unknown";
                     const type = v.observations.find(o => o.startsWith("type:"))?.substring(5) || "Unknown";
-                    const dataset = v.observations.find(o => o.startsWith("dataset:"))?.substring(8) || "Unknown";
-                    return `- **${v.name}** (${type}, Dataset: ${dataset})`;
-                }).join("\n");
+                    // Show truncated preview of first non-type observation
+                    const nonTypeObs = v.observations.find(o => !o.startsWith("type:"));
+                    const preview = nonTypeObs
+                        ? `${nonTypeObs.substring(0, 60)}${nonTypeObs.length > 60 ? '...' : ''}`
+                        : "No description";
+                    return `- **${v.name}** (${type}, Status: ${status}): ${preview}`;
+                }));
                 const sessionsText = recentSessions.map(s => {
-                    return `- ${s.date}: ${s.project} - ${s.summary.substring(0, 100)}${s.summary.length > 100 ? '...' : ''}`;
+                    return `- ${s.project} - ${s.summary.substring(0, 60)}${s.summary.length > 60 ? '...' : ''}`;
                 }).join("\n");
-                const date = new Date().toISOString().split('T')[0];
                 return {
                     content: [{
                             type: "text",
-                            text: `# Ask user to choose what to focus on in this session. Present the following options:
+                            text: `# Choose what to focus on in this session
+
+## Session ID
+\`${sessionId}\`
 
 ## Recent Research Sessions
 ${sessionsText || "No recent sessions found."}
 
 ## Active Research Projects
-${projectsText || "No active projects found."}
+${projectsText.join("\n") || "No active projects found."}
 
 ## Available Datasets
-${datasetsText || "No datasets found."}
+${datasetsText.join("\n") || "No datasets found."}
 
 ## Research Questions
-${questionsText || "No research questions found."}
+${questionsText.join("\n") || "No research questions found."}
 
 ## Recent Statistical Models
-${modelsText || "No models found."}
+${modelsText.join("\n") || "No models found."}
 
 ## Recent Visualizations
-${visualizationsText || "No visualizations found."}
+${visualizationsText.join("\n") || "No visualizations found."}
 
 To load specific context, use the \`loadcontext\` tool with the entity name and session ID - ${sessionId}`
                         }]
@@ -1708,55 +1807,65 @@ To load specific context, use the \`loadcontext\` tool with the entity name and 
                     // Find models for this project
                     const modelsGraph = await knowledgeGraphManager.searchNodes("entityType:model");
                     const relatedModels = modelsGraph.entities.filter((m) => datasetsRelations.some((r) => r.to === m.name));
-                    // Format project context message
-                    const status = entity.observations.find((o) => o.startsWith("status:"))?.substring(7) || "Unknown";
-                    const updated = entity.observations.find((o) => o.startsWith("updated:"))?.substring(8) || "Unknown";
-                    const description = entity.observations.find((o) => !o.startsWith("status:") && !o.startsWith("updated:"));
+                    // Get status and priority using relation-based approach
+                    const status = await knowledgeGraphManager.getEntityStatus(entityName) || "Unknown";
+                    const priority = await knowledgeGraphManager.getEntityPriority(entityName);
+                    const priorityText = priority ? `- **Priority**: ${priority}` : "";
+                    // Format observations without looking for specific patterns
+                    const observationsList = entity.observations.length > 0
+                        ? entity.observations.map(obs => `- ${obs}`).join("\n")
+                        : "No observations";
                     // Format datasets info
-                    const datasetsText = relatedDatasets.map((d) => {
+                    const datasetsText = await Promise.all(relatedDatasets.map(async (d) => {
+                        const datasetStatus = await knowledgeGraphManager.getEntityStatus(d.name) || "Unknown";
                         const size = d.observations.find((o) => o.startsWith("size:"))?.substring(5) || "Unknown size";
                         const variables = d.observations.find((o) => o.startsWith("variables:"))?.substring(10) || "Unknown variables";
-                        return `- **${d.name}**: ${size}, ${variables} variables`;
-                    }).join("\n");
+                        return `- **${d.name}** (Status: ${datasetStatus}): ${size}, ${variables} variables`;
+                    }));
                     // Format hypotheses
-                    const hypothesesText = hypothesisTests.hypotheses?.map((h) => {
-                        return `- **${h.name}**: ${h.status} (p-value: ${h.pValue || "N/A"})${h.conclusion ? ` - ${h.conclusion}` : ""}`;
-                    }).join("\n") || "No hypotheses found";
+                    const hypothesesText = await Promise.all((hypothesisTests.hypotheses || []).map(async (h) => {
+                        const hypothesisStatus = await knowledgeGraphManager.getEntityStatus(h.name) || "Unknown";
+                        return `- **${h.name}**: Status: ${hypothesisStatus} (p-value: ${h.pValue || "N/A"})${h.conclusion ? ` - ${h.conclusion}` : ""}`;
+                    }));
                     // Format statistical tests
-                    const testsText = statisticalResults.tests?.map((t) => {
-                        return `- **${t.name}** (${t.type}): ${t.result || "No result"} - Variables: ${t.variables?.join(", ") || "N/A"}`;
-                    }).join("\n") || "No statistical tests found";
+                    const testsText = await Promise.all((statisticalResults.tests || []).map(async (t) => {
+                        const testStatus = await knowledgeGraphManager.getEntityStatus(t.name) || "Unknown";
+                        return `- **${t.name}** (${t.type}): Status: ${testStatus}, ${t.result || "No result"} - Variables: ${t.variables?.join(", ") || "N/A"}`;
+                    }));
                     // Format models
-                    const modelsText = relatedModels.map((m) => {
+                    const modelsText = await Promise.all(relatedModels.map(async (m) => {
+                        const modelStatus = await knowledgeGraphManager.getEntityStatus(m.name) || "Unknown";
                         const type = m.observations.find((o) => o.startsWith("type:"))?.substring(5) || "Unknown type";
-                        const performance = m.observations.find((o) => o.startsWith("performance:"))?.substring(12) || "No metrics";
-                        return `- **${m.name}** (${type}): ${performance}`;
-                    }).join("\n");
+                        return `- **${m.name}** (${type}): Status: ${modelStatus}`;
+                    }));
                     // Format visualizations
-                    const visualizationsText = visualizations.visualizations?.slice(0, 5).map((v) => {
-                        return `- **${v.name}** (${v.type}): ${v.description || "No description"}`;
-                    }).join("\n") || "No visualizations found";
+                    const visualizationsText = await Promise.all((visualizations.visualizations || []).slice(0, 5).map(async (v) => {
+                        const vizStatus = await knowledgeGraphManager.getEntityStatus(v.name) || "Unknown";
+                        return `- **${v.name}** (${v.type}): Status: ${vizStatus}, ${v.description || "No description"}`;
+                    }));
                     contextMessage = `# Quantitative Research Project Context: ${entityName}
 
 ## Project Overview
 - **Status**: ${status}
-- **Last Updated**: ${updated}
-- **Description**: ${description || "No description"}
+${priorityText}
+
+## Observations
+${observationsList}
 
 ## Datasets
-${datasetsText || "No datasets associated with this project"}
+${datasetsText.join("\n") || "No datasets associated with this project"}
 
 ## Hypotheses
-${hypothesesText}
+${hypothesesText.join("\n") || "No hypotheses found"}
 
 ## Statistical Tests
-${testsText}
+${testsText.join("\n") || "No statistical tests found"}
 
 ## Models
-${modelsText || "No models associated with this project"}
+${modelsText.join("\n") || "No models associated with this project"}
 
 ## Key Visualizations
-${visualizationsText}`;
+${visualizationsText.join("\n") || "No visualizations found"}`;
                 }
                 else if (entityType === "dataset") {
                     // Get dataset analysis
@@ -1785,46 +1894,54 @@ ${visualizationsText}`;
                             r.to === entityName &&
                             r.relationType === "trained_on");
                     });
-                    // Format dataset context
-                    const size = entity.observations.find((o) => o.startsWith("size:"))?.substring(5) || "Unknown";
-                    const variablesCount = entity.observations.find((o) => o.startsWith("variables:"))?.substring(10) || "Unknown";
-                    const description = entity.observations.find((o) => !o.startsWith("size:") && !o.startsWith("variables:") && !o.startsWith("status:") && !o.startsWith("created:") && !o.startsWith("updated:"));
+                    // Get status and priority using relation-based approach
+                    const status = await knowledgeGraphManager.getEntityStatus(entityName) || "Unknown";
+                    const priority = await knowledgeGraphManager.getEntityPriority(entityName);
+                    const priorityText = priority ? `- **Priority**: ${priority}` : "";
+                    // Format dataset observations without looking for specific patterns
+                    const observationsList = entity.observations.length > 0
+                        ? entity.observations.map(obs => `- ${obs}`).join("\n")
+                        : "No observations";
                     // Format variables
-                    const variablesText = datasetAnalysis.variables?.map((v) => {
+                    const variablesText = await Promise.all((datasetAnalysis.variables || []).map(async (v) => {
+                        const variableStatus = v.variable ? await knowledgeGraphManager.getEntityStatus(v.variable.name) : "Unknown";
                         const dataType = v.metadata?.dataType || "Unknown";
                         const scale = v.metadata?.scale || "Unknown";
                         const stats = v.distribution?.descriptiveStats || {};
                         const statsText = Object.entries(stats)
                             .map(([key, value]) => `${key}: ${value}`)
                             .join(", ");
-                        return `- **${v.variable.name}** (${dataType}, ${scale}): ${statsText || "No statistics available"}`;
-                    }).join("\n") || "No variables found";
+                        return `- **${v.variable.name}** (${dataType}, ${scale}): Status: ${variableStatus}, ${statsText || "No statistics available"}`;
+                    }));
                     // Format models
-                    const modelsText = trainedModels.map((m) => {
+                    const modelsText = await Promise.all(trainedModels.map(async (m) => {
+                        const modelStatus = await knowledgeGraphManager.getEntityStatus(m.name) || "Unknown";
                         const type = m.observations.find((o) => o.startsWith("type:"))?.substring(5) || "Unknown type";
-                        const performance = m.observations.find((o) => o.startsWith("performance:"))?.substring(12) || "No metrics";
-                        return `- **${m.name}** (${type}): ${performance}`;
-                    }).join("\n");
+                        return `- **${m.name}** (${type}): Status: ${modelStatus}`;
+                    }));
                     // Format visualizations
-                    const visualizationsText = visualizations.visualizations?.slice(0, 5).map((v) => {
-                        return `- **${v.name}** (${v.type}): ${v.description || "No description"}`;
-                    }).join("\n") || "No visualizations found";
+                    const visualizationsText = await Promise.all((visualizations.visualizations || []).slice(0, 5).map(async (v) => {
+                        const vizStatus = await knowledgeGraphManager.getEntityStatus(v.name) || "Unknown";
+                        return `- **${v.name}** (${v.type}): Status: ${vizStatus}, ${v.description || "No description"}`;
+                    }));
                     contextMessage = `# Dataset Context: ${entityName}
 
 ## Dataset Overview
 - **Project**: ${projectName}
-- **Size**: ${size}
-- **Variables**: ${variablesCount}
-- **Description**: ${description || "No description"}
+- **Status**: ${status}
+${priorityText}
+
+## Observations
+${observationsList}
 
 ## Variables
-${variablesText}
+${variablesText.join("\n") || "No variables found"}
 
 ## Visualizations
-${visualizationsText}
+${visualizationsText.join("\n") || "No visualizations found"}
 
 ## Models Trained on this Dataset
-${modelsText || "No models have been trained on this dataset"}`;
+${modelsText.join("\n") || "No models have been trained on this dataset"}`;
                 }
                 else if (entityType === "variable") {
                     // Get variable distribution
@@ -2137,10 +2254,7 @@ ${entity.entityType}
             const hypothesisResultsStage = stages.find(s => s.stage === "hypothesisResults");
             const modelUpdatesStage = stages.find(s => s.stage === "modelUpdates");
             const projectStatusStage = stages.find(s => s.stage === "projectStatus");
-            // Get current date if not already set
-            const date = summaryStage?.stageData?.date || new Date().toISOString().split('T')[0];
             return {
-                date,
                 summary: summaryStage?.stageData?.summary || "",
                 duration: summaryStage?.stageData?.duration || "unknown",
                 project: summaryStage?.stageData?.project || "",
@@ -2349,7 +2463,6 @@ ${entity.entityType}
                     const endSessionArgs = stageResult.stageData;
                     try {
                         // Parse arguments
-                        const date = endSessionArgs.date;
                         const summary = endSessionArgs.summary;
                         const duration = endSessionArgs.duration;
                         const project = endSessionArgs.project;
@@ -2360,6 +2473,8 @@ ${entity.entityType}
                         const modelUpdates = endSessionArgs.modelUpdates ? JSON.parse(endSessionArgs.modelUpdates) : [];
                         const projectStatus = endSessionArgs.projectStatus;
                         const projectObservation = endSessionArgs.projectObservation;
+                        // Create a timestamp to use instead of dates
+                        const timestamp = new Date().getTime().toString();
                         // No longer need to create session entity since we're using persistent storage
                         // 2. Update or create dataset entities
                         if (datasetUpdates.length > 0) {
@@ -2370,24 +2485,24 @@ ${entity.entityType}
                                     // Update existing dataset
                                     const datasetEntity = datasetGraph.entities[0];
                                     const observations = datasetEntity.observations.filter(o => !o.startsWith("size:") &&
-                                        !o.startsWith("variables:") &&
-                                        !o.startsWith("updated:") &&
-                                        !o.startsWith("status:"));
+                                        !o.startsWith("variables:"));
                                     observations.push(`size:${datasetUpdate.size || "unknown"}`);
                                     observations.push(`variables:${datasetUpdate.variables || "unknown"}`);
-                                    observations.push(`updated:${date}`);
-                                    if (datasetUpdate.status) {
-                                        observations.push(`status:${datasetUpdate.status}`);
-                                    }
                                     if (datasetUpdate.description) {
                                         observations.push(datasetUpdate.description);
                                     }
-                                    await knowledgeGraphManager.deleteEntities([datasetUpdate.name]);
-                                    await knowledgeGraphManager.createEntities([{
-                                            name: datasetUpdate.name,
-                                            entityType: "dataset",
-                                            observations
+                                    await knowledgeGraphManager.deleteObservations([{
+                                            entityName: datasetUpdate.name,
+                                            observations: datasetEntity.observations
                                         }]);
+                                    await knowledgeGraphManager.addObservations([{
+                                            entityName: datasetUpdate.name,
+                                            contents: observations
+                                        }]);
+                                    // Update dataset status using setEntityStatus helper
+                                    if (datasetUpdate.status) {
+                                        await knowledgeGraphManager.setEntityStatus(datasetUpdate.name, datasetUpdate.status);
+                                    }
                                 }
                                 else {
                                     // Create new dataset
@@ -2397,11 +2512,13 @@ ${entity.entityType}
                                             observations: [
                                                 `size:${datasetUpdate.size || "unknown"}`,
                                                 `variables:${datasetUpdate.variables || "unknown"}`,
-                                                `created:${date}`,
-                                                `status:${datasetUpdate.status || "active"}`,
                                                 datasetUpdate.description || "No description"
                                             ]
                                         }]);
+                                    // Set dataset status using setEntityStatus helper
+                                    if (datasetUpdate.status) {
+                                        await knowledgeGraphManager.setEntityStatus(datasetUpdate.name, datasetUpdate.status);
+                                    }
                                     // Link dataset to project
                                     await knowledgeGraphManager.createRelations([{
                                             from: project,
@@ -2413,14 +2530,14 @@ ${entity.entityType}
                         }
                         // 3. Add new analyses (statistical tests)
                         if (newAnalyses.length > 0) {
+                            const timestamp = new Date().getTime().toString();
                             const analysisEntities = newAnalyses.map((analysis, i) => ({
-                                name: analysis.name || `Analysis_${date.replace(/-/g, "")}_${i + 1}`,
+                                name: analysis.name || `Analysis_${timestamp}_${i + 1}`,
                                 entityType: "statistical_test",
                                 observations: [
                                     `type:${analysis.type}`,
                                     `result:${analysis.result}`,
                                     analysis.pValue ? `p-value:${analysis.pValue}` : null,
-                                    `date:${date}`,
                                     `project:${project}`
                                 ].filter(Boolean) // Remove null values
                             }));
@@ -2457,12 +2574,12 @@ ${entity.entityType}
                         // 4. Add new visualizations
                         if (newVisualizations.length > 0) {
                             const vizEntities = newVisualizations.map((viz, i) => ({
-                                name: viz.name || `Visualization_${date.replace(/-/g, "")}_${i + 1}`,
+                                name: viz.name || `Visualization_${timestamp}_${i + 1}`,
                                 entityType: "visualization",
                                 observations: [
                                     `type:${viz.type}`,
                                     viz.description,
-                                    `date:${date}`,
+                                    `date:${timestamp}`,
                                     viz.datasetName ? `dataset:${viz.datasetName}` : null,
                                     `project:${project}`
                                 ].filter(Boolean) // Remove null values
@@ -2507,7 +2624,7 @@ ${entity.entityType}
                                         !o.startsWith("p-value:") &&
                                         !o.startsWith("updated:"));
                                     observations.push(`status:${hypothesis.status}`);
-                                    observations.push(`updated:${date}`);
+                                    observations.push(`updated:${timestamp}`);
                                     if (hypothesis.pValue) {
                                         observations.push(`p-value:${hypothesis.pValue}`);
                                     }
@@ -2528,8 +2645,8 @@ ${entity.entityType}
                                             entityType: "hypothesis",
                                             observations: [
                                                 `status:${hypothesis.status}`,
-                                                `created:${date}`,
-                                                `updated:${date}`,
+                                                `created:${timestamp}`,
+                                                `updated:${timestamp}`,
                                                 hypothesis.pValue ? `p-value:${hypothesis.pValue}` : null,
                                                 hypothesis.notes || "No notes",
                                                 `project:${project}`
@@ -2563,7 +2680,7 @@ ${entity.entityType}
                                     const observations = modelEntity.observations.filter(o => !o.startsWith("performance:") &&
                                         !o.startsWith("updated:"));
                                     observations.push(`performance:${JSON.stringify(modelUpdate.metrics)}`);
-                                    observations.push(`updated:${date}`);
+                                    observations.push(`updated:${timestamp}`);
                                     if (modelUpdate.notes) {
                                         observations.push(modelUpdate.notes);
                                     }
@@ -2582,8 +2699,8 @@ ${entity.entityType}
                                             observations: [
                                                 `type:${modelUpdate.type || "unknown"}`,
                                                 `performance:${JSON.stringify(modelUpdate.metrics || {})}`,
-                                                `created:${date}`,
-                                                `updated:${date}`,
+                                                `created:${timestamp}`,
+                                                `updated:${timestamp}`,
                                                 modelUpdate.notes || "No notes",
                                                 `project:${project}`
                                             ]
@@ -2608,19 +2725,17 @@ ${entity.entityType}
                         // 7. Update project status
                         const projectGraph = await knowledgeGraphManager.searchNodes(`name:${project}`);
                         if (projectGraph.entities.length > 0) {
-                            const projectEntity = projectGraph.entities[0];
-                            let observations = projectEntity.observations.filter(o => !o.startsWith("status:") && !o.startsWith("updated:"));
-                            observations.push(`status:${projectStatus}`);
-                            observations.push(`updated:${date}`);
-                            if (projectObservation) {
-                                observations.push(projectObservation);
+                            // Update project status using setEntityStatus helper
+                            if (projectStatus) {
+                                await knowledgeGraphManager.setEntityStatus(project, projectStatus);
                             }
-                            await knowledgeGraphManager.deleteEntities([project]);
-                            await knowledgeGraphManager.createEntities([{
-                                    name: project,
-                                    entityType: "project",
-                                    observations
-                                }]);
+                            // Add project observation if provided
+                            if (projectObservation) {
+                                await knowledgeGraphManager.addObservations([{
+                                        entityName: project,
+                                        contents: [projectObservation]
+                                    }]);
+                            }
                         }
                         // Return a summary message
                         return {
@@ -2628,7 +2743,7 @@ ${entity.entityType}
                                     type: "text",
                                     text: `# Quantitative Research Session Recorded
 
-I've recorded your research session from ${date} focusing on the ${project} project.
+I've recorded your research session focusing on the ${project} project.
 
 ## Session Summary
 ${summary}

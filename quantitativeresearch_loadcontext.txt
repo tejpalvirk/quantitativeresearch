@@ -11,6 +11,9 @@ When to use this tool:
 - Preparing for statistical analysis by establishing data context
 - Examining variable distributions and correlations
 - Getting a holistic view of quantitative research progress
+- Tracking research activities by their current status
+- Managing tasks based on their assigned priorities
+- Understanding sequential relationships between research processes
 
 Key features:
 - Provides richly formatted, context-aware information about quantitative research entities
@@ -22,6 +25,9 @@ Key features:
 - Highlights relationships between variables and statistical tests
 - Presents performance metrics for statistical models
 - Shows dataset characteristics and variable properties
+- Includes status information for tracking research progress
+- Displays priority assignments for critical research elements
+- Visualizes sequential relationships between research processes
 
 Parameters explained:
 1. entityName: Required - The name of the entity to retrieve context for
@@ -29,24 +35,40 @@ Parameters explained:
 2. entityType: Optional - The type of entity being retrieved
   - Default: "project"
   - Helps the system format the output appropriately
-  - Common types include: "project", "dataset", "variable", "model", "hypothesis", "statistical_test"
+  - Common types include: "project", "dataset", "variable", "model", "hypothesis", "statistical_test", "status", "priority"
 3. sessionId: Optional - The current session identifier
   - Typically provided by startsession
   - Used for tracking entity views within the session
 
 Each entity type returns specialized context information:
-- Project: Shows project status, description, datasets, hypotheses, statistical tests, models, and key visualizations
-- Dataset: Displays project affiliation, size, variable count, descriptive statistics, visualizations, and models trained on it
+- Project: Shows project status (via has_status), description, datasets, hypotheses, statistical tests, models, key visualizations, and priority (via has_priority)
+- Dataset: Displays project affiliation, status (via has_status), size, variable count, descriptive statistics, visualizations, and models trained on it
 - Variable: Shows data type, role, scale, descriptive statistics, normality tests, and correlations with other variables
-- Model: Displays type, training dataset, creation date, performance metrics, and model parameters
-- Hypothesis: Shows status, p-value, creation date, associated tests, and project affiliation
+- Model: Displays type, training dataset, creation date, status (via has_status), performance metrics, and model parameters
+- Hypothesis: Shows status (via has_status), p-value, creation date, associated tests, and project affiliation
 - Statistical Test: Shows test type, result, p-value, date, variables analyzed, and hypotheses tested
+- Status: Shows all entities assigned this status value, organized by entity type
+- Priority: Shows all entities assigned this priority value, organized by entity type
 - Other Entity Types: Shows basic entity information and observations
+
+Status and Priority Information:
+- All entity displays include status information when available via has_status relations
+- Priority assignments are shown for research tasks and other prioritized elements
+- Valid status values include: active, completed, pending, abandoned
+- Valid priority values include: high, low
+
+Sequential Process Relationships:
+- Entity displays show preceding and following entities through precedes relations
+- Process sequences are visualized to show workflow between research activities
+- Research phases and activities display their position in the overall analytical pipeline
+- Sequential relationships help understand dependencies in multi-step analysis processes
 
 Return information:
 - Formatted markdown text with hierarchical structure
 - Sections adapted to the specific entity type
 - Related entities shown with their statistical properties
+- Status and priority information prominently displayed
+- Sequential relationships clearly indicated
 - Error messages if the entity doesn't exist or can't be retrieved
 
 You should:
@@ -58,6 +80,9 @@ You should:
 - Use hypothesis context to assess research question outcomes
 - Explore model context to evaluate predictive performance
 - Examine statistical test context to understand analysis results
+- Check status entities to see all research elements at the same stage
+- Review priority entities to identify critical research tasks
+- Explore sequential relationships to understand analysis workflows
 - After retrieving context, follow up on specific entities of interest
 - Use in conjunction with startsession to maintain session tracking
 - Remember that this tool only retrieves existing information; use buildcontext to add new entities 

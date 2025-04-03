@@ -11,6 +11,9 @@ When to use this tool:
 - Eliminating deprecated hypotheses or findings that are no longer supported
 - Removing preliminary analyses that have been superseded by more rigorous methods
 - Reorganizing your analytical structure by removing and recreating elements
+- Updating status assignments when research activities change state
+- Modifying priority assignments as research focus shifts
+- Restructuring sequential relationships between research processes
 
 Key features:
 - Provides targeted deletion capabilities for three distinct types of knowledge graph elements: entities, relations, and observations
@@ -19,6 +22,8 @@ Key features:
 - Returns clear confirmation of deletion results
 - Preserves the overall structure of the research knowledge graph while removing specific elements
 - Performs validation to ensure deletion requests are properly formatted
+- Handles status and priority relation management
+- Supports modification of sequential process relationships
 
 Parameters explained:
 1. type: The type of deletion operation to perform
@@ -26,11 +31,11 @@ Parameters explained:
   - Determines how the data parameter is interpreted
 2. data: The elements to remove from the knowledge graph (structure varies by type):
   - For "entities": Array of entity names to delete
-    * Example: ["Dataset_2021", "Hypothesis_A", "Model_Linear"]
+    * Example: ["Dataset_2021", "Hypothesis_A", "Model_Linear", "Status_Completed"]
   - For "relations": Array of relation objects, each containing:
     * from: Name of the source entity
     * to: Name of the target entity
-    * relationType: Type of relationship to remove
+    * relationType: Type of relationship to remove (e.g., "correlates_with", "has_status", "has_priority", "precedes")
     * Example: [{ "from": "Variable_Age", "to": "Variable_Income", "relationType": "correlates_with" }]
   - For "observations": Array of objects, each containing:
     * entityName: Name of the entity to remove observations from
@@ -42,11 +47,26 @@ Deletion behavior by type:
 - Relations: Removes only the specified relationships, leaving the connected entities intact
 - Observations: Removes specific observations from entities while preserving the entities themselves
 
+Status and Priority Management:
+- When deleting status or priority entities, be aware of the impact on entities that reference them
+- For changing an entity's status, delete the existing has_status relation before creating a new one
+- For changing priority, delete the existing has_priority relation before creating a new one
+- Status values (active, completed, pending, abandoned) are managed through relations, not direct properties
+- Priority values (high, low) are managed through relations, not direct properties
+
+Sequential Process Management:
+- Removing precedes relations affects the logical flow of research processes
+- When reorganizing research phases, update all affected precedes relations
+- Consider restructuring sequential relationships after deletion to maintain methodological continuity
+- Sequential relationships are important for maintaining proper order in multi-step analyses
+
 Safety considerations:
 - Entity deletion is permanent and will also remove all relationships involving those entities
 - Consider exporting or backing up your research knowledge graph before performing large-scale deletions
 - For sensitive operations, consider removing specific observations rather than entire entities
 - When removing statistical tests or results, consider the impact on your overall analysis framework
+- Status changes should be carefully managed to maintain accurate research progress tracking
+- Changes to sequential relationships may affect dependent research activities
 
 Return information:
 - JSON response indicating success or failure
@@ -70,4 +90,6 @@ You should:
 - Consider the cascading effects of entity deletion on your overall research structure
 - Delete outdated statistical results when new analyses are performed
 - Remove incorrect relationships between variables when better understanding is gained
-- Update entities by deleting specific observations and adding new ones 
+- When updating entity status, delete the old has_status relation before creating a new one
+- When updating entity priority, delete the old has_priority relation before creating a new one
+- Maintain logical consistency when modifying sequential analysis relationships 

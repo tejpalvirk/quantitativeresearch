@@ -12,9 +12,12 @@ When to use this tool:
 - Finding connections between different aspects of your research
 - Creating statistical reports or summaries from your data
 - Exploring the relationships between research questions and findings
+- Identifying entities by status to track research progress
+- Filtering tasks by priority to manage research workflow
+- Analyzing sequential relationships between research processes
 
 Key features:
-- Offers 13 specialized operations for querying different aspects of quantitative research data
+- Offers specialized operations for querying different aspects of quantitative research data
 - Retrieves complete or filtered views of the research knowledge graph
 - Provides flexible search capabilities across all research entities
 - Supports detailed exploration of specific entities by name
@@ -24,10 +27,13 @@ Key features:
 - Identifies related entities to explore connections within your research
 - Returns consistently structured JSON responses for easy processing
 - Facilitates depth and breadth exploration of quantitative data
+- Supports status-based filtering of research entities
+- Enables priority-based task management
+- Provides sequential process analysis capabilities
 
 Parameters explained:
 1. type: The type of query operation to perform
-  - Accepts one of 13 specialized operations: "graph", "search", "nodes", "project", "dataset", "hypothesis", "variables", "statistics", "visualizations", "model", "question", "distribution", or "related"
+  - Accepts one of the specialized operations: "graph", "search", "nodes", "project", "dataset", "hypothesis", "variables", "statistics", "visualizations", "model", "question", "distribution", "related", "status", "priority", "sequence"
   - Determines how the params parameter is interpreted
 2. params: Operation-specific parameters (structure varies by type):
   - For "graph": No parameters needed (retrieves the full research knowledge graph)
@@ -59,6 +65,12 @@ Parameters explained:
     * datasetName: (Optional) Dataset name to contextualize the variable
   - For "related": Object containing:
     * entityName: Name of the entity to find related entities for
+  - For "status": Object containing:
+    * statusValue: The status value to filter by (e.g., "active", "completed", "pending", "abandoned")
+  - For "priority": Object containing:
+    * priorityValue: The priority value to filter by (e.g., "high", "low")
+  - For "sequence": Object containing:
+    * entityName: Name of the entity to find sequential relationships for
 
 Operation details:
 - graph: Returns the complete research knowledge graph with all entities and relationships
@@ -74,6 +86,22 @@ Operation details:
 - question: Retrieves research question details, related hypotheses, and supporting findings
 - distribution: Analyzes the statistical distribution of a variable with descriptive stats and normality tests
 - related: Identifies all entities directly connected to a specific entity
+- status: Retrieves all entities with a specific status value
+- priority: Retrieves all entities with a specific priority value
+- sequence: Identifies sequential relationships for a specific entity showing preceding and following entities
+
+Status and Priority Information:
+- Status queries return entities organized by their current research stage
+- Priority queries help identify critical research tasks and elements
+- Status values include: active, completed, pending, abandoned
+- Priority values include: high, low
+- Status and priority are assigned through has_status and has_priority relations
+
+Sequential Process Information:
+- Sequence queries identify entities that come before or after in a research process
+- Sequential relationships help visualize the research workflow and methodology
+- The sequence operation shows both incoming and outgoing precedes relations
+- Process sequences are essential for understanding multi-step analytical procedures
 
 Return information:
 - success: Boolean indicating whether the operation succeeded
@@ -82,6 +110,8 @@ Return information:
   * results: For search operations
   * nodes: For specific entity retrieval
   * project/dataset/hypothesis/etc.: For specialized views
+  * status/priority: Lists of entities with specified status/priority values
+  * sequence: Preceding and following entities in research processes
 
 You should:
 - Start with broad queries ("graph", "search") to explore your research corpus
@@ -91,6 +121,9 @@ You should:
 - Explore model performance metrics to assess predictive accuracy
 - Use visualization galleries to communicate research findings
 - Examine research questions and their supporting evidence
+- Use status queries to identify all entities at a particular research stage
+- Use priority queries to focus on high-priority research tasks
+- Use sequence queries to understand process flows in your research methodology
 - Combine multiple operations to build a comprehensive understanding of your research
 - Use the related operation to discover connections between entities
 - Apply search filters to find specific types of research elements 
